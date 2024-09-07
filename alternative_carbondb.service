@@ -1,0 +1,13 @@
+[Unit]
+Description=Carbon DB Agent Service
+
+[Service]
+ExecStart=%h/carbon-db-agent/machine_energy_carbondb.sh
+Restart=always
+RestartSec=0
+#StandardOutput=file:%h/query_solarpanel.log
+#StandardError=file:%h/query_solarpanel.log
+
+
+[Install]
+WantedBy=default.target
