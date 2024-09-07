@@ -4,6 +4,18 @@ The agent will read the CPU utilization through a supplied script.
 
 The estimation for the machine power comes from [Cloud Energy](https://www.green-coding.io/projects/cloud-energy/).
 
+## Installation
+
+Create a user space `systemd` service with:
+
+```bash
+cp carbondb_agent.service ~/.config/systemd/user/default.target.wants/
+systemctl --user enable carbondb_agent.service
+systemctl --user start carbondb_agent.service
+```
+
+Done. It will send data every 60 seconds and will be restarted on reboot or fail.
+
 ## Creating energy estimations
 Estimation agents are used when no direct power values can be obtained from a system.
 
