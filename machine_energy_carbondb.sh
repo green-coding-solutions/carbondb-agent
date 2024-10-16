@@ -1,6 +1,8 @@
 #!/bin/env bash
 set -euo pipefail
 
+API_TOKEN='PLEASE_INPUT_YOUR_API_TOKEN'
+
 while true; do
 
     # Clear tmp file
@@ -18,27 +20,26 @@ while true; do
 
     # Since we poll every 1s Watts = Joules
     energy=$(awk '{s+=$1} END {print s}' /tmp/machine_power.log)
+    energy=$(echo "scale=0; ($energy * 1000000) / 1" | bc) # microjoules
 
     # timestamp in microseconds
     timestamp=$(date +%s%N | cut -b1-16)
 
     json_data=$(cat <<EOF
-[
-  {
-    "type": "machine.test",
-    "company": "20b269ce-cd67-4788-8614-030eaf5a0b47",
-    "machine": "6662e9b9-2daa-4177-a5c3-20af79567a66",
-    "project": "00000001-BCA5-451B-9E60-3A2FD07FA28D",
-    "tags": "metrics.green-coding.io",
-    "time_stamp": "$timestamp",
-    "energy_value": "$energy"
-  }
-]
+{
+    "type": "machine.server",
+    "machine": "Hetzner-CAX21",
+    "project": "GMT-HOSTED-SERVICE",
+    "tags": ["metrics.green-coding.io"],
+    "time": "$timestamp",
+    "energy_uj": "$energy"
+}
 EOF
 )
 
     curl -X POST https://api.green-coding.io/v1/carbondb/add \
-    	-H "Content-Type: application/json" \
-    	-d "$json_data"
+         -H "X-Authentication: ${API_TOKEN}" \
+         -H "Content-Type: application/json" \
+         -d "$json_data"
 
 done

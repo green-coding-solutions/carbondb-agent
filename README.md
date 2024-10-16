@@ -14,6 +14,8 @@ systemctl --user enable carbondb_agent.service
 systemctl --user start carbondb_agent.service
 ```
 
+You must also set your `API_TOKEN` in the file `machine_energy_carbondb.sh`
+
 Done. It will send data every 60 seconds and will be restarted on reboot or fail.
 
 ## Creating energy estimations
