@@ -23,7 +23,7 @@ while true; do
     energy=$(echo "scale=0; ($energy * 1000000) / 1" | bc) # microjoules
 
     # timestamp in microseconds
-    timestamp=$(date +%s%N | cut -b1-16)
+    timestamp=$(date +%s%6N)
 
     json_data=$(cat <<EOF
 {
