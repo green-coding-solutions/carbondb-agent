@@ -9,7 +9,7 @@ The estimation for the machine power comes from [Cloud Energy](https://www.green
 Create a user space `systemd` service with:
 
 ```bash
-cp carbondb_agent.service ~/.config/systemd/user/default.target.wants/
+cp carbondb_agent.service ~/.config/systemd/user/
 systemctl --user enable carbondb_agent.service
 systemctl --user start carbondb_agent.service
 ```
