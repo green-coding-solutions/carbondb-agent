@@ -37,7 +37,7 @@ while true; do
 EOF
 )
 
-    curl -X POST https://api.green-coding.io/v1/carbondb/add \
+    curl -X POST https://api.green-coding.io/v2/carbondb/add \
          -H "X-Authentication: ${API_TOKEN}" \
          -H "Content-Type: application/json" \
          -d "$json_data"
