@@ -14,7 +14,13 @@ systemctl --user enable carbondb_agent.service
 systemctl --user start carbondb_agent.service
 ```
 
-You must also set your `API_TOKEN` in the file `machine_energy_carbondb.sh`
+Then configure the agent:
+
+```bash
+cp .env.example .env
+```
+
+and set your `API_TOKEN` and `SCI_M` (embodied carbon of your machine share in gCO2e, mandatory for CarbonDB) in `.env`
 
 Done. It will send data every 60 seconds and will be restarted on reboot or fail.
 

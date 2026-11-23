@@ -1,7 +1,19 @@
 #!/bin/env bash
 set -euo pipefail
 
-API_TOKEN='PLEASE_INPUT_YOUR_API_TOKEN'
+# Configuration is read from .env next to this script. See .env.example
+ENV_FILE="$(dirname "$0")/.env"
+if [[ -f "$ENV_FILE" ]]; then
+    set -a
+    source "$ENV_FILE"
+    set +a
+fi
+
+# Embodied carbon is mandatory for CarbonDB (/v3/carbondb/add) and is calculated the same way as in Eco CI:
+#   embodied_g = SCI_M * (duration_s / SCI_USAGE_DURATION)
+: "${API_TOKEN:?Please set API_TOKEN in .env}"
+: "${SCI_M:?Please set SCI_M (embodied carbon of the machine share in gCO2e) in .env}"
+SCI_USAGE_DURATION=${SCI_USAGE_DURATION:-126144000}
 
 while true; do
 
@@ -22,6 +34,10 @@ while true; do
     energy=$(awk '{s+=$1} END {print s}' /tmp/machine_power.log)
     energy=$(echo "scale=0; ($energy * 1000000) / 1" | bc) # microjoules
 
+    # The measured duration is the sum of all sample intervals, so the embodied carbon matches the energy timeframe
+    duration_s=$(awk '{s+=$1} END {printf "%.9f", s}' /tmp/machine_cpu_utilization.log)
+    embodied_carbon_ug=$(echo "$SCI_M $duration_s $SCI_USAGE_DURATION" | awk '{printf "%.0f", $1 * ($2 / $3) * 1000000}') # g -> ug
+
     # timestamp in microseconds
     timestamp=$(date +%s%6N)
 
@@ -31,15 +47,17 @@ while true; do
     "machine": "Hetzner-CAX21",
     "project": "GMT-HOSTED-SERVICE",
     "tags": ["metrics.green-coding.io"],
-    "time": "$timestamp",
-    "energy_uj": "$energy"
+    "time": $timestamp,
+    "energy_uj": $energy,
+    "embodied_carbon_ug": $embodied_carbon_ug
 }
 EOF
 )
 
-    curl -X POST https://api.green-coding.io/v2/carbondb/add \
+    curl -sS --fail-with-body -X POST https://api.green-coding.io/v3/carbondb/add \
          -H "X-Authentication: ${API_TOKEN}" \
          -H "Content-Type: application/json" \
-         -d "$json_data"
+         -d "$json_data" \
+        || echo "Submission to CarbonDB failed. Payload was: $json_data" >&2
 
 done
