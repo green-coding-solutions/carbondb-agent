@@ -32,6 +32,9 @@ while true; do
 
     source "$POWER_PROFILE_FILE"
 
+    # timestamp in microseconds at beginning of interval
+    timestamp=$(date +%s%6N)
+
     bash "$(dirname "$0")/cpu-utilization.sh" 60 > /tmp/machine_cpu_utilization.log
 
     while read -r read_var_time read_var_util; do
@@ -48,8 +51,6 @@ while true; do
     duration_s=$(awk '{s+=$1} END {printf "%.9f", s}' /tmp/machine_cpu_utilization.log)
     embodied_carbon_ug=$(echo "$SCI_M $duration_s $SCI_USAGE_DURATION" | awk '{printf "%.0f", $1 * ($2 / $3) * 1000000}') # g -> ug
 
-    # timestamp in microseconds
-    timestamp=$(date +%s%6N)
 
     json_data=$(cat <<EOF
 {
